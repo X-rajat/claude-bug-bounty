@@ -1,0 +1,141 @@
+Subject: Security Vulnerability Report — titan.co.in (Responsible Disclosure)
+
+Dear Titan Information Security Team,
+
+I am writing to report several security vulnerabilities I discovered on titan.co.in and associated subdomains during a responsible security assessment, in accordance with Titan Company's vulnerability disclosure policy (https://hackerone.com/titan_company).
+
+All testing was conducted passively or with minimal, non-destructive interaction. No customer data was accessed, no systems were disrupted, and no exploitation was performed beyond proof-of-concept validation.
+
+
+SUMMARY OF FINDINGS
+====================
+
+I identified 15 findings across Critical, High, Medium, and Low severity levels. The most urgent issues are outlined below.
+
+
+1. [CRITICAL] Subdomain Takeover — titaneyeplus.titan.co.in
+------------------------------------------------------------
+
+The subdomain titaneyeplus.titan.co.in has a CNAME record pointing to a decommissioned AWS Elastic Load Balancer:
+
+    titaneyeplus.titan.co.in  CNAME  →  titaneyeplus-1772952710.ap-southeast-1.elb.amazonaws.com
+    titaneyeplus-1772952710.ap-southeast-1.elb.amazonaws.com  →  NXDOMAIN (does not exist)
+
+Impact: An attacker could register a new ELB with the same name in ap-southeast-1 and serve arbitrary content under titaneyeplus.titan.co.in. Since cookies are scoped to .titan.co.in with SameSite=None, an attacker could intercept session cookies, enabling phishing and session hijacking.
+
+Remediation: Remove the dangling CNAME DNS record immediately.
+
+
+2. [HIGH] Hardcoded AES Encryption Key in Tata Digital SSO JavaScript
+----------------------------------------------------------------------
+
+The production SSO JavaScript at accounts.tatadigital.com/v2/tdl-sso-auth.js contains a hardcoded AES encryption key ("tdl-encrypt") used to decrypt customer authentication hashes:
+
+    CryptoJS.AES.decrypt(localStorage.getItem("__ENCY__"), "tdl-encrypt")
+
+This customer hash is shared across 33 Tata Group brands (BigBasket, Croma, Tanishq, 1mg, etc.). The hardcoded key renders the encryption meaningless — any XSS on any Tata brand site could extract and decrypt customer hashes, enabling cross-brand account takeover.
+
+Remediation: Remove client-side encryption with hardcoded keys. Use HttpOnly cookies for authentication tokens instead of localStorage.
+
+
+3. [HIGH] Session Cookie (sid) Missing HttpOnly Flag
+-----------------------------------------------------
+
+The session identifier cookie "sid" is set without the HttpOnly flag:
+
+    Set-Cookie: sid=<session_id>; Path=/; Secure; SameSite=None
+
+This makes the session ID accessible via document.cookie to any JavaScript running on the page. Combined with the minimal CSP (no script-src directive), any XSS would directly yield session hijacking.
+
+Additionally, 8 out of 11 cookies set by titan.co.in are missing the HttpOnly flag.
+
+Remediation: Add the HttpOnly flag to all session and sensitive cookies.
+
+
+4. [HIGH] Internal Environment URLs Leaked in Production JavaScript
+--------------------------------------------------------------------
+
+The SSO JavaScript bundle exposes internal/pre-production environment URLs:
+
+    - https://dev-account.tatadigital.com/v2/
+    - https://sit-account.tatadigital.com/v2/
+    - https://pt-account.tatadigital.com/v2/
+    - https://bf-account.tatadigital.com/v2/
+    - http://localhost:8080/v2/
+    - Internal API endpoints: dapi, sapi, ppapi, pfapi, bapi (.tatadigital.com)
+
+These pre-production systems may have weaker security controls and could be targeted.
+
+Remediation: Use build-time environment variable injection; strip non-production URLs from release bundles.
+
+
+5. [MEDIUM] Internal IP Address Disclosure via DNS
+---------------------------------------------------
+
+Public DNS records for dashboard.titan.co.in and dr.titan.co.in resolve to internal RFC1918 IP addresses and expose internal AWS ELB hostnames:
+
+    dashboard.titan.co.in  →  10.160.112.192, 10.160.113.92
+        CNAME: internal-k8s-titan-dashboar-2027bd6a20-695231916.ap-south-1.elb.amazonaws.com
+
+    dr.titan.co.in  →  10.162.19.149, 10.162.19.181
+        CNAME: internal-nimesa-dr-deployment-870280725.ap-south-2.elb.amazonaws.com
+
+This reveals internal network topology, Kubernetes cluster names, and DR infrastructure location.
+
+Remediation: Use split-horizon DNS so internal records are not resolvable from public DNS servers.
+
+
+6. [MEDIUM] Minimal Content Security Policy
+---------------------------------------------
+
+The CSP header only includes frame-ancestors:
+
+    Content-Security-Policy: frame-ancestors 'self'
+
+There is no script-src, object-src, or default-src directive, leaving no protection against XSS even if input sanitization fails.
+
+
+7. [MEDIUM] Additional Findings
+---------------------------------
+
+  - SameSite=None on all cookies — weakens CSRF protections
+  - Staging/dev environments publicly accessible (stg.titan.co.in, dev2.titan.co.in)
+  - AWS API Gateway information disclosure on app.titan.co.in
+  - 33 Tata Group OAuth client IDs exposed in production SSO JS
+  - Customer authentication hashes stored in localStorage (accessible to XSS)
+  - SFCC controller endpoints accessible without authentication (Cart-Get, CustomerForm-Get, Stores-FindStores, etc.)
+
+8. [LOW] Other Findings
+-------------------------
+
+  - DMARC policy set to quarantine instead of reject
+  - Missing Permissions-Policy, COOP, CORP, COEP headers
+  - Missing /.well-known/security.txt
+  - FTP subdomain (ftp.titan.co.in) still in DNS
+
+
+DETAILED REPORT
+================
+
+A comprehensive report with full technical details, evidence, reproduction steps, CVSS scores, CWE classifications, remediation recommendations, and potential attack chains is attached to this email.
+
+
+DISCLOSURE TIMELINE
+====================
+
+  - 2026-06-08: Vulnerabilities discovered
+  - 2026-06-08: Initial report sent to infosec@titan.co.in
+  - [Pending]: Acknowledgement from Titan security team
+  - [Pending]: Remediation timeline agreed
+  - [Pending]: Fix verification
+  - [Pending]: Coordinated public disclosure (if applicable)
+
+I am happy to provide additional details, assist with reproducing any of these findings, or clarify any points. I will refrain from disclosing these findings publicly until Titan has had reasonable time to address them.
+
+I would appreciate an acknowledgement of this report within 5 business days.
+
+Thank you for your time and attention to these security matters.
+
+Best regards,
+Rajat
+rjfs8320@gmail.com
