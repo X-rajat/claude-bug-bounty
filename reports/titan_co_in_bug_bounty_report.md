@@ -379,7 +379,59 @@ localStorage is accessible to **any JavaScript running on the same origin**, inc
 
 ---
 
-## Finding #13 — DMARC Policy Set to Quarantine [LOW]
+## Finding #13 — Google Maps API Key Exploitable for Billing Abuse [HIGH]
+
+**Severity:** High (CVSS 8.6)  
+**CWE:** CWE-284 (Improper Access Control), CWE-306 (Missing Authentication for Critical Function)
+
+### Description
+
+The Google Maps API key `AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c` exposed in the page source is insufficiently restricted. While some APIs (Geocoding, Places, Directions) correctly reject unauthorized use, **three billable APIs are exploitable**:
+
+| API | Restriction | Cost per 1,000 | Attack Method |
+|---|---|---|---|
+| **Static Maps API** | **NONE** | $2.00–$4.00 | Any IP, no referer needed |
+| **Roads API (Snap to Roads)** | Referer check only | $10.00 | Trivial HTTP header spoof |
+| **Roads API (Nearest Roads)** | Referer check only | $10.00 | Trivial HTTP header spoof |
+| Maps JavaScript API | Referer check only | $7.00 | Iframe/browser spoof |
+
+### Proof of Concept
+
+**Static Maps (completely unrestricted):**
+```bash
+curl "https://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=1&size=640x640&scale=2&maptype=satellite&key=AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c"
+# Returns: HTTP 200, 1.2MB satellite image — billable at $0.004/request
+```
+
+**Roads API (referer spoof):**
+```bash
+curl -H "Referer: https://www.titan.co.in/" \
+  "https://roads.googleapis.com/v1/snapToRoads?path=12.97,77.59|12.98,77.60&key=AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c"
+# Returns: HTTP 200, snapped road coordinates — billable at $0.01/request
+```
+
+### Financial Impact
+
+| Scenario | Requests/Day | Daily Cost | Monthly Cost |
+|---|---|---|---|
+| Conservative (1 req/sec) | 86,400 | $1,209 | $36,288 |
+| Moderate (10 req/sec) | 864,000 | $12,096 | $362,880 |
+| Aggressive (100 concurrent) | 8,640,000 | $120,960 | $3,628,800 |
+
+An attacker needs only a simple `while true; do curl ...; done` loop to generate significant charges on Titan's Google Cloud billing account.
+
+### Remediation
+
+1. Restrict the API key to **only the specific APIs needed** (Maps JavaScript API only)
+2. Add **IP address restrictions** for server-side APIs
+3. Set **HTTP referrer restrictions** to exact domains (`www.titan.co.in/*` only)
+4. Set a **daily billing cap** in Google Cloud Console to limit maximum exposure
+5. Rotate the API key after applying restrictions
+6. Remove the key from the HTML `data-key` attribute if it's not the Maps key
+
+---
+
+## Finding #14 — DMARC Policy Set to Quarantine [LOW]
 
 **Severity:** Low (CVSS 3.7)  
 **CWE:** CWE-290 (Authentication Bypass by Spoofing)

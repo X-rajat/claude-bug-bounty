@@ -85,18 +85,40 @@ This reveals internal network topology, Kubernetes cluster names, and DR infrast
 Remediation: Use split-horizon DNS so internal records are not resolvable from public DNS servers.
 
 
-6. [MEDIUM] Minimal Content Security Policy
+6. [HIGH] Google Maps API Key — Billing Abuse via Unrestricted APIs
+--------------------------------------------------------------------
+
+The Google Maps API key (AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c) exposed in the page source is insufficiently restricted. While some APIs correctly reject unauthorized use, three billable APIs are exploitable:
+
+  - Static Maps API: COMPLETELY UNRESTRICTED — works from any IP, no referer needed
+    Cost: $2–$4 per 1,000 requests
+  - Roads API (Snap to Roads + Nearest Roads): Referer check only, trivially spoofable
+    Cost: $10 per 1,000 requests
+
+Proof of Concept (Static Maps — no restrictions at all):
+
+    curl "https://maps.googleapis.com/maps/api/staticmap?center=0,0&zoom=1&size=640x640&scale=2&maptype=satellite&key=AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c"
+    → Returns HTTP 200, 1.2MB satellite image (billable)
+
+Proof of Concept (Roads API — referer spoof):
+
+    curl -H "Referer: https://www.titan.co.in/" \
+      "https://roads.googleapis.com/v1/snapToRoads?path=12.97,77.59|12.98,77.60&key=AIzaSyApR_v3REraBdX6ZHywVRCCQT8y60bBH3c"
+    → Returns HTTP 200, road data (billable at $0.01/request)
+
+Financial Impact:
+  - At 1 request/sec: $1,209/day ($36,288/month)
+  - At 10 requests/sec: $12,096/day ($362,880/month)
+  - At 100 concurrent: $120,960/day ($3.6M/month)
+
+Remediation: Restrict the key to Maps JavaScript API only, add exact domain referrer restrictions, set a daily billing cap, and rotate the key.
+
+
+7. [MEDIUM] Minimal Content Security Policy
 ---------------------------------------------
 
-The CSP header only includes frame-ancestors:
+The CSP header only includes frame-ancestors — no script-src, object-src, or default-src directive.
 
-    Content-Security-Policy: frame-ancestors 'self'
-
-There is no script-src, object-src, or default-src directive, leaving no protection against XSS even if input sanitization fails.
-
-
-7. [MEDIUM] Additional Findings
----------------------------------
 
   - SameSite=None on all cookies — weakens CSRF protections
   - Staging/dev environments publicly accessible (stg.titan.co.in, dev2.titan.co.in)
@@ -105,7 +127,7 @@ There is no script-src, object-src, or default-src directive, leaving no protect
   - Customer authentication hashes stored in localStorage (accessible to XSS)
   - SFCC controller endpoints accessible without authentication (Cart-Get, CustomerForm-Get, Stores-FindStores, etc.)
 
-8. [LOW] Other Findings
+9. [LOW] Other Findings
 -------------------------
 
   - DMARC policy set to quarantine instead of reject
