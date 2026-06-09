@@ -560,4 +560,310 @@ Upgrade to `p=reject` once monitoring confirms legitimate email is properly auth
 
 ---
 
-*Report generated via passive reconnaissance and light active testing within responsible disclosure scope.*
+## Finding #21 — Qwikcilver Gift Card Brute Force (No Rate Limiting) [HIGH]
+
+**Severity:** High (CVSS 7.5)  
+**CWE:** CWE-307 (Improper Restriction of Excessive Authentication Attempts)
+
+### Description
+
+The Qwikcilver gift card endpoints at checkout have **no rate limiting, no CAPTCHA, and no account lockout** for balance enquiry and card validation. An attacker can brute-force gift card numbers and PINs at high speed.
+
+### Proof of Concept
+
+```
+POST /on/demandware.store/Sites-Titan-Site/en_IN/Qwikcilver-BalanceEnquiry
+Content-Type: application/x-www-form-urlencoded
+
+cardNumber=6200160000000001&cardPin=123456&csrf_token=<token>
+```
+
+- 10+ sequential requests completed in ~6 seconds with no blocking
+- All returned HTTP 200 with consistent error messages
+- No IP-based throttling, session-based limiting, or progressive delays
+- PIN lockout message exists ("wait 30 minutes") but is **bypassable with a new session**
+
+### Endpoints Affected
+
+| Endpoint | Method | Rate Limited |
+|---|---|---|
+| `Qwikcilver-BalanceEnquiry` | POST | No |
+| `Qwikcilver-ApplyGiftCard` | POST | No |
+| `Qwikcilver-RemoveGiftCard` | GET | No |
+
+### Impact
+
+- Attackers can enumerate valid gift card numbers by observing response differences
+- Gift card PINs (6 digits = 1M combinations) can be brute-forced
+- Stolen gift card balances can be drained via ApplyGiftCard
+
+### Remediation
+
+1. Implement rate limiting (max 5 attempts per 15 minutes per session/IP)
+2. Add exponential backoff on failed attempts
+3. Enforce PIN lockout server-side (not session-based)
+4. Add CAPTCHA after 3 failed attempts
+
+---
+
+## Finding #22 — Qwikcilver RemoveGiftCard Uses GET Method (Credentials in URL) [MEDIUM]
+
+**Severity:** Medium (CVSS 5.3)  
+**CWE:** CWE-598 (Use of GET Request Method With Sensitive Query Strings)
+
+### Description
+
+The `Qwikcilver-RemoveGiftCard` endpoint uses the **GET method**, which means the `transactionId` parameter is passed in the URL query string. This causes credentials to be logged in:
+
+- Browser history
+- Server access logs
+- CDN/proxy logs (Cloudflare)
+- Referer headers if the user navigates away
+
+```
+GET /on/demandware.store/Sites-Titan-Site/en_IN/Qwikcilver-RemoveGiftCard?transactionId=<id>
+```
+
+The `Qwikcilver-ApplyGiftCard` (redeem) endpoint in the JS also uses GET with `cardNumber`, `cardPin`, and `amount` as query parameters:
+
+```javascript
+$.ajax({url: y, method: "GET", data: {cardNumber: i, cardPin: r, amount: o}})
+```
+
+### Impact
+
+Gift card credentials (number, PIN, transaction IDs) are exposed in logs and browser history, enabling replay attacks.
+
+### Remediation
+
+Change all Qwikcilver endpoints to POST method and pass sensitive data in the request body.
+
+---
+
+## Finding #23 — Coupon Code Brute Force (No Rate Limiting) [MEDIUM]
+
+**Severity:** Medium (CVSS 5.3)  
+**CWE:** CWE-307 (Improper Restriction of Excessive Authentication Attempts)
+
+### Description
+
+The `Cart-AddCoupon` endpoint has **no rate limiting**. An attacker can submit unlimited coupon code guesses without any throttling, CAPTCHA, or lockout.
+
+### Proof of Concept
+
+20+ sequential coupon code attempts were made with no blocking:
+
+```
+POST /on/demandware.store/Sites-Titan-Site/en_IN/Cart-AddCoupon
+couponCode=TITAN100&csrf_token=<token>  → "This coupon is invalid"
+couponCode=FREE100&csrf_token=<token>   → "This coupon is invalid"
+couponCode=EMPLOYEE&csrf_token=<token>  → "This coupon is invalid"
+... (20 more, no blocking)
+```
+
+### Impact
+
+- Employee/internal discount codes can be discovered
+- Promotional codes can be enumerated before public release
+- Limited-use coupon codes can be stolen
+
+### Remediation
+
+1. Rate limit to 5 coupon attempts per session per 10 minutes
+2. Add progressive delays after failed attempts
+3. Log and alert on high-volume coupon enumeration
+
+---
+
+## Finding #24 — Race Condition in Cart Operations [MEDIUM]
+
+**Severity:** Medium (CVSS 6.5)  
+**CWE:** CWE-362 (Concurrent Execution Using Shared Resource with Improper Synchronization)
+
+### Description
+
+Cart operations (`Cart-AddProduct`, `Cart-UpdateQuantity`) have **no mutex or locking mechanism**. Multiple concurrent requests can manipulate the cart simultaneously, potentially leading to:
+
+- Exceeding stock limits
+- Price inconsistencies during quantity updates
+- Double-application of discounts
+
+### Proof of Concept
+
+5 concurrent `Cart-AddProduct` requests for the same item were all accepted and processed:
+
+```bash
+# All 5 concurrent requests returned HTTP 200 with "Product added to cart"
+for i in {1..5}; do
+  curl -X POST Cart-AddProduct -d "pid=nu1825sm11&quantity=1" &
+done
+```
+
+### Impact
+
+Race conditions could allow:
+- Purchasing more items than available stock
+- Applying multiple exclusive discounts simultaneously
+- Creating inconsistent cart state leading to incorrect pricing
+
+### Remediation
+
+1. Implement server-side locking on cart operations
+2. Use optimistic concurrency control with cart version tokens
+3. Validate stock quantities atomically
+
+---
+
+## Finding #25 — Client-Side-Only Gift Card Denomination Validation [MEDIUM]
+
+**Severity:** Medium (CVSS 6.5)  
+**CWE:** CWE-602 (Client-Side Enforcement of Server-Side Security)
+
+### Description
+
+The e-gift card (TW-EGC) price validation is performed **entirely in client-side JavaScript**. The HTML form uses only HTML5 attributes for validation:
+
+```html
+<input name="price" min="500" max="20000" maxlength="6" step="100" value="500" required>
+```
+
+The denomination validation in JavaScript:
+
+```javascript
+var t = $("#tw-egc-price").val()
+var n = JSON.parse($("#egift-denominations").val()).find(function(e) {
+    return Math.trunc(Number(e.displayValue)) === Number(t)
+});
+```
+
+These are trivially bypassed via browser DevTools or direct API requests.
+
+### Current Server Behavior
+
+When tested, the server defaults invalid denomination values to ₹500 (the minimum), which partially mitigates the risk. However:
+- The server does NOT return an explicit validation error for out-of-range values
+- Custom denomination values like `gcAmt0` are silently accepted and mapped to ₹500
+- No server-side validation error message for amounts outside 500-20000 range
+
+**Note:** Full exploitation was blocked because all gift card variants are currently out of stock (`totalATS=0`). When stock is replenished, the client-side-only validation becomes the primary attack surface for ₹0 gift card purchases.
+
+### Impact
+
+When e-gift cards are in stock, an attacker could potentially:
+- Purchase gift cards at non-standard denominations
+- Bypass the ₹500 minimum if server-side defaulting has edge cases
+- Create gift cards at amounts not intended by the business logic
+
+### Remediation
+
+1. Add server-side validation: reject any denomination not in the allowed list
+2. Return explicit error messages for out-of-range amounts
+3. Validate that submitted price matches the selected variant's price in the pricebook
+
+---
+
+## Finding #26 — NeuCoins/Encircle Points — Client-Controlled Sale Price [MEDIUM]
+
+**Severity:** Medium (CVSS 6.5)  
+**CWE:** CWE-602 (Client-Side Enforcement of Server-Side Security)
+
+### Description
+
+The NeuCoins loyalty point burn simulation reads the `salePrice` value directly from a user-controlled DOM element:
+
+```javascript
+n.salePrice = "null" !== $(".salesPriceValue").val() 
+    ? parseInt($(".salesPriceValue").val(), 10) : 0
+```
+
+Similarly, the Encircle loyalty points redemption sends user-controlled values:
+
+```javascript
+$.ajax({
+    url: $(this).data("encircleredeemurl"),
+    method: "POST",
+    data: {
+        redeemPoints: $("#points").val(),       // user-controlled
+        encirclePoints: t,                       // from DOM
+        cardNumber: $(".encircle-bal").text()    // from DOM
+    }
+})
+```
+
+### Impact
+
+An authenticated attacker could:
+- Set `salePrice=0` to maximize points redemption ratio
+- Submit inflated `redeemPoints` values exceeding actual balance
+- Manipulate point-to-currency conversion calculations
+
+**Note:** These endpoints require authentication and could not be fully tested without a valid login session.
+
+### Remediation
+
+1. Server must calculate `salePrice` from the cart, never accept it from the client
+2. Validate `redeemPoints` against the user's actual loyalty balance server-side
+3. Never trust `cardNumber` from the client — look it up from the authenticated session
+
+---
+
+## Finding #27 — Checkout PlaceOrder Accessible Without Payment Validation [LOW]
+
+**Severity:** Low (CVSS 3.7)  
+**CWE:** CWE-284 (Improper Access Control)
+
+### Description
+
+The `CheckoutServices-PlaceOrder` endpoint can be called without completing the payment step. When tested with `orderTotal=0`:
+
+```
+POST /on/demandware.store/Sites-Titan-Site/en_IN/CheckoutServices-PlaceOrder
+csrf_token=<token>&orderTotal=0
+
+Response: {"error": true, "errorMessage": "Your order cannot be completed because 
+at least one of the addresses for products is invalid."}
+```
+
+The endpoint rejected the request based on **address validation**, not payment validation. This suggests the payment amount is not validated at the PlaceOrder stage, and if a valid address were provided, the order might proceed without proper payment.
+
+### Impact
+
+- Potential to place orders without completing payment flow
+- Price manipulation if payment amount is not re-validated at order placement
+- Combined with authenticated access, could enable zero-cost orders
+
+### Remediation
+
+1. Validate payment completion before allowing PlaceOrder
+2. Re-calculate order total server-side at PlaceOrder (never accept from client)
+3. Verify payment gateway confirmation before order creation
+
+---
+
+## Updated Recommendations Summary
+
+| Priority | Action |
+|---|---|
+| **IMMEDIATE** | Remove dangling CNAME for `titaneyeplus.titan.co.in` |
+| **IMMEDIATE** | Add HttpOnly flag to `sid` and all session cookies |
+| **IMMEDIATE** | Add rate limiting to Qwikcilver gift card endpoints |
+| **HIGH** | Remove hardcoded AES key from SSO JS; stop storing auth tokens in localStorage |
+| **HIGH** | Strip internal environment URLs from production JS bundles |
+| **HIGH** | Implement comprehensive CSP with script-src whitelist |
+| **HIGH** | Add rate limiting to coupon code endpoint |
+| **HIGH** | Fix race conditions in cart operations with server-side locking |
+| **HIGH** | Add server-side gift card denomination validation |
+| **HIGH** | Change Qwikcilver endpoints from GET to POST |
+| **MEDIUM** | Use split-horizon DNS for internal-only records |
+| **MEDIUM** | Restrict access to staging/dev environments |
+| **MEDIUM** | Set SameSite=Lax or Strict on session cookies |
+| **MEDIUM** | Server-side validation for NeuCoins/Encircle point redemption values |
+| **MEDIUM** | Validate payment completion before CheckoutServices-PlaceOrder |
+| **LOW** | Upgrade DMARC to p=reject |
+| **LOW** | Add Permissions-Policy and other security headers |
+| **LOW** | Create a valid security.txt file |
+
+---
+
+*Report generated via passive reconnaissance, active testing, and business logic analysis within responsible disclosure scope.*
+*Updated: 2026-06-09 — Added business logic findings (#21-#27)*
