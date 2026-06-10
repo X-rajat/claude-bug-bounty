@@ -9,7 +9,99 @@
 
 ## Executive Summary
 
-Passive reconnaissance of `app.titanfile.com` revealed multiple security vulnerabilities across CSP configuration, SAML SSO implementation, information disclosure, and source code exposure. The most impactful findings relate to a dangerously permissive Content Security Policy and exposed SAML Service Provider metadata across the wildcard DNS namespace.
+Passive reconnaissance of `app.titanfile.com` revealed **14 security vulnerabilities** including 4 CRITICAL/HIGH severity findings across OAuth2 misconfiguration, Content Security Policy bypass, SAML SSO weaknesses, unauthenticated Socket.IO access, and full source code exposure. The most impactful findings relate to dynamic OAuth2 redirect_uri manipulation via wildcard DNS, unauthenticated WebSocket handshakes enabling potential Cross-Site WebSocket Hijacking (CSWSH), and a dangerously permissive CSP that completely negates XSS protection on authenticated pages.
+
+---
+
+## Finding #0 — Google OAuth2 Dynamic redirect_uri via Wildcard DNS
+
+**Severity: CRITICAL (CVSS 8.2)**  
+**Type:** CWE-601 — URL Redirection to Untrusted Site + CWE-346 — Origin Validation Error
+
+### Description
+
+The Google OAuth2 integration dynamically generates the `redirect_uri` based on the subdomain used to initiate the flow. Combined with wildcard DNS (`*.titanfile.com` resolves to the same server), an attacker can craft an OAuth flow with an arbitrary subdomain:
+
+### Reproduction
+
+```bash
+# From the main app:
+curl -sI https://app.titanfile.com/login/google-oauth2/ | grep location
+# redirect_uri=https://app.titanfile.com/complete/google-oauth2/
+
+# From an arbitrary attacker-chosen subdomain:
+curl -sI https://evil-attacker.titanfile.com/login/google-oauth2/ | grep location
+# redirect_uri=https://evil-attacker.titanfile.com/complete/google-oauth2/
+
+# Another example:
+curl -sI https://phishing-login.titanfile.com/login/google-oauth2/ | grep location
+# redirect_uri=https://phishing-login.titanfile.com/complete/google-oauth2/
+```
+
+### Google OAuth2 Client ID
+
+```
+282142653715-fblvrf56cefn2seq8vkuoec4qq11990o.apps.googleusercontent.com
+```
+
+### Impact
+
+1. **If Google OAuth app has wildcard redirect URIs registered:** An attacker could intercept authorization codes by chaining with any open redirect or XSS on the wildcard domain
+2. **Phishing amplification:** Attacker sends victim to `https://secure-login.titanfile.com/login/google-oauth2/` — the legitimate-looking titanfile.com domain increases phishing credibility
+3. **Token theft chain:** If combined with an XSS on any subdomain (facilitated by `unsafe-inline`/`unsafe-eval` CSP), the auth code in the callback URL could be stolen via `document.location`
+4. **OAuth state confusion:** Different subdomains may share the same OAuth state token handling, potentially enabling cross-tenant authentication
+
+### Remediation
+
+1. Fix `redirect_uri` to a single hardcoded value (e.g., `https://app.titanfile.com/complete/google-oauth2/`)
+2. Validate the subdomain in the OAuth callback handler
+3. Eliminate wildcard DNS or validate subdomains against a whitelist
+4. Register only specific redirect URIs in Google Cloud Console
+
+---
+
+## Finding #0.5 — Unauthenticated Socket.IO Handshake (Cross-Site WebSocket Hijacking)
+
+**Severity: HIGH (CVSS 7.6)**  
+**Type:** CWE-306 — Missing Authentication for Critical Function + CWE-1275 — Sensitive Cookie with Improper SameSite Attribute
+
+### Description
+
+The Socket.IO endpoint at `/socket.io/` accepts transport handshakes and issues session IDs **without any authentication check**. No CORS headers are set, meaning WebSocket upgrades (which bypass CORS) can be initiated from any origin.
+
+### Reproduction
+
+```bash
+# Unauthenticated handshake - returns valid session ID:
+curl -s "https://app.titanfile.com/socket.io/?EIO=4&transport=polling"
+# Response: 0{"sid":"sEFSClm4PBuav6hCA0ZX","upgrades":["websocket"],
+#   "pingTimeout":60000,"pingInterval":10000,"maxPayload":1000000}
+
+# POST events are accepted:
+SID="sEFSClm4PBuav6hCA0ZX"
+curl -s -X POST "https://app.titanfile.com/socket.io/?EIO=4&transport=polling&sid=$SID" \
+  -d '42["user:checkbuildandauth",{}]'
+# Response: OK
+```
+
+### Socket.IO Event Surface (from source code analysis)
+
+Emit events: `channels:deletefiles`, `channels:readfiles`, `files:virusscan`, `notifications:bulkdelete`, `notifications:count`, `notifications:setseen`, `user:checkbuildandauth`
+
+Admin events (received): `admin:enabledebug`, `admin:softlockout`, `admin:hardlockout`, `permissions:update_perm_cache`
+
+### Impact
+
+- **Cross-Site WebSocket Hijacking (CSWSH):** A malicious page could open a WebSocket to `wss://app.titanfile.com/socket.io/`. While `SameSite=Lax` on the session cookie partially mitigates this, some browsers send Lax cookies with WebSocket requests (browser-dependent behavior). The `AWSALBTGCORS` cookie has `SameSite=None` and IS sent cross-site.
+- **If CSWSH succeeds:** Attacker can read channels, delete files, read notifications, and potentially perform admin actions as the victim user
+- **Information disclosure:** Even without auth, the handshake reveals server configuration (maxPayload, timeouts, transport capabilities)
+
+### Remediation
+
+1. Require valid session authentication BEFORE issuing Socket.IO session IDs
+2. Implement CORS restrictions on the Socket.IO endpoint (allow only `app.titanfile.com` origins)
+3. Add token-based authentication to the WebSocket upgrade request
+4. Set `SameSite=Strict` on the session cookie for maximum CSWSH protection
 
 ---
 
