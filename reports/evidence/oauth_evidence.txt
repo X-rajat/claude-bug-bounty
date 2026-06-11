@@ -1,0 +1,67 @@
+=== EVIDENCE: OAuth redirect_uri on app.titanfile.com ===
+HTTP/2 302 
+date: Thu, 11 Jun 2026 10:07:44 GMT
+content-type: text/html; charset=utf-8
+content-length: 0
+location: https://accounts.google.com/o/oauth2/auth?client_id=282142653715-fblvrf56cefn2seq8vkuoec4qq11990o.apps.googleusercontent.com&redirect_uri=https://app.titanfile.com/complete/google-oauth2/&state=nusDJCcZo67GxWKeYZUQTBU71eSIs28j&response_type=code&scope=openid+email+profile
+set-cookie: AWSALBTG=xIo5g0JusT3CNUvDtddAHjeEy9ovt6U9/RUrTrx7vNkNutqqTQaQnX8qbujRtxt5kWxBGYSLBtohEPg6HeiyFOIUiJ2RvdQeKfnfcVK+HR73+GdmdF59RB8uGtwHMzh+Rm8YvVPDffKw8dT1G7FxMS8AbW9cWLixG4Hv6ebjEE+L3MvGMBk=; Expires=Thu, 18 Jun 2026 10:07:44 GMT; Path=/
+set-cookie: AWSALBTGCORS=xIo5g0JusT3CNUvDtddAHjeEy9ovt6U9/RUrTrx7vNkNutqqTQaQnX8qbujRtxt5kWxBGYSLBtohEPg6HeiyFOIUiJ2RvdQeKfnfcVK+HR73+GdmdF59RB8uGtwHMzh+Rm8YvVPDffKw8dT1G7FxMS8AbW9cWLixG4Hv6ebjEE+L3MvGMBk=; Expires=Thu, 18 Jun 2026 10:07:44 GMT; Path=/; SameSite=None; Secure
+expires: Thu, 11 Jun 2026 10:07:44 GMT
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-security-policy: default-src 'self' *.live.com *.1drv.com *.microsoft.com *.ms *.office.net *.sharepoint.com *.officeapps.live.com s.adroll.com *.quantserve.com www.googletagmanager.com fonts.gstatic.com fonts.googleapis.com js.stripe.com *.google.com *.pendo.io *.zuora.com *.titanfile.com *.titanfile.qa data: 'unsafe-inline' https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; script-src 'self' js.stripe.com *.google.com *.gstatic.com appsforoffice.microsoft.com ajax.aspnetcdn.com *.pendo.io *.zuora.com 'unsafe-inline' 'unsafe-eval' ; connect-src 'self' wss: *.hitachi-solutions.com *.pendo.io *.zuora.com https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; img-src * 'self' blob: data: 'unsafe-inline' ; style-src 'self' use.fontawesome.com fonts.googleapis.com *.pendo.io 'unsafe-inline' *.just-checking.com ; base-uri 'self' ; form-action 'self' * ; frame-ancestors 'self' outlook.office.com mail.yukonombudsman.ca *.pendo.io https://sandbox.ca *.saskmutual.com *.insuranceconnect.io
+x-frame-options: DENY
+vary: Accept-Language, Cookie
+content-language: en-us
+set-cookie: sessionid=jlgqyvty809d426y51ac8625xk8jklwz; expires=Thu, 25 Jun 2026 10:07:44 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=31536000; includeSubdomains;
+referrer-policy: strict-origin-when-cross-origin
+cross-origin-opener-policy: same-origin
+
+
+
+=== EVIDENCE: OAuth redirect_uri on attacker subdomain ===
+HTTP/2 302 
+date: Thu, 11 Jun 2026 10:07:50 GMT
+content-type: text/html; charset=utf-8
+content-length: 0
+location: https://accounts.google.com/o/oauth2/auth?client_id=282142653715-fblvrf56cefn2seq8vkuoec4qq11990o.apps.googleusercontent.com&redirect_uri=https://evil-attacker.titanfile.com/complete/google-oauth2/&state=dUxnHsKurVdoZUdJnwv7RwU2RnjKpYJf&response_type=code&scope=openid+email+profile
+set-cookie: AWSALBTG=VKGnjUQa/WZa0FTT0piYb2WBrKat9DKIyxq5Wl0eOqmbMkWBOFLDUWMSTsannPRJtcmubbMZ/r8MErS4SprTnyxHf85IJ6sD8HP4zGHSOlJdt9m1LGVWiN5DdR2tljmeXpM70HZZrVuryBfG0gU9QhgCGYKFnFIwtez6v4XRBrRZ5759Q38=; Expires=Thu, 18 Jun 2026 10:07:50 GMT; Path=/
+set-cookie: AWSALBTGCORS=VKGnjUQa/WZa0FTT0piYb2WBrKat9DKIyxq5Wl0eOqmbMkWBOFLDUWMSTsannPRJtcmubbMZ/r8MErS4SprTnyxHf85IJ6sD8HP4zGHSOlJdt9m1LGVWiN5DdR2tljmeXpM70HZZrVuryBfG0gU9QhgCGYKFnFIwtez6v4XRBrRZ5759Q38=; Expires=Thu, 18 Jun 2026 10:07:50 GMT; Path=/; SameSite=None; Secure
+expires: Thu, 11 Jun 2026 10:07:50 GMT
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-security-policy: default-src 'self' *.live.com *.1drv.com *.microsoft.com *.ms *.office.net *.sharepoint.com *.officeapps.live.com s.adroll.com *.quantserve.com www.googletagmanager.com fonts.gstatic.com fonts.googleapis.com js.stripe.com *.google.com *.pendo.io *.zuora.com *.titanfile.com *.titanfile.qa data: 'unsafe-inline' https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; script-src 'self' js.stripe.com *.google.com *.gstatic.com appsforoffice.microsoft.com ajax.aspnetcdn.com *.pendo.io *.zuora.com 'unsafe-inline' 'unsafe-eval' ; connect-src 'self' wss: *.hitachi-solutions.com *.pendo.io *.zuora.com https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; img-src * 'self' blob: data: 'unsafe-inline' ; style-src 'self' use.fontawesome.com fonts.googleapis.com *.pendo.io 'unsafe-inline' *.just-checking.com ; base-uri 'self' ; form-action 'self' * ; frame-ancestors 'self' outlook.office.com mail.yukonombudsman.ca *.pendo.io https://sandbox.ca *.saskmutual.com *.insuranceconnect.io
+x-frame-options: DENY
+vary: Accept-Language, Cookie
+content-language: en-us
+set-cookie: sessionid=d4c0un9mjju0ijnhc6dsafm472nxi07i; expires=Thu, 25 Jun 2026 10:07:50 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=31536000; includeSubdomains;
+referrer-policy: strict-origin-when-cross-origin
+cross-origin-opener-policy: same-origin
+
+
+
+=== EVIDENCE: OAuth redirect_uri on phishing subdomain ===
+HTTP/2 302 
+date: Thu, 11 Jun 2026 10:07:51 GMT
+content-type: text/html; charset=utf-8
+content-length: 0
+location: https://accounts.google.com/o/oauth2/auth?client_id=282142653715-fblvrf56cefn2seq8vkuoec4qq11990o.apps.googleusercontent.com&redirect_uri=https://secure-login.titanfile.com/complete/google-oauth2/&state=bln77u6VxSSKyQZVOatFQ6Z5ty0vlSra&response_type=code&scope=openid+email+profile
+set-cookie: AWSALBTG=Gd8riarJbvEYvSsl0kKnCdh7KZ4zk0Dk4ADwp2gwp66mxP9LSGjQT7gP9myI5cGt6ZOh5gUBCCvF9Ou6kducvxdxfZ+iEHslRW/feitt78AGsQT9Vq6+9Vlb1h00KP8FADnN92NLkRPrN8fYacYeBDKtAVay0jJHJcVRhyLZTCe/bmY0Veo=; Expires=Thu, 18 Jun 2026 10:07:51 GMT; Path=/
+set-cookie: AWSALBTGCORS=Gd8riarJbvEYvSsl0kKnCdh7KZ4zk0Dk4ADwp2gwp66mxP9LSGjQT7gP9myI5cGt6ZOh5gUBCCvF9Ou6kducvxdxfZ+iEHslRW/feitt78AGsQT9Vq6+9Vlb1h00KP8FADnN92NLkRPrN8fYacYeBDKtAVay0jJHJcVRhyLZTCe/bmY0Veo=; Expires=Thu, 18 Jun 2026 10:07:51 GMT; Path=/; SameSite=None; Secure
+expires: Thu, 11 Jun 2026 10:07:51 GMT
+cache-control: max-age=0, no-cache, no-store, must-revalidate, private
+content-security-policy: default-src 'self' *.live.com *.1drv.com *.microsoft.com *.ms *.office.net *.sharepoint.com *.officeapps.live.com s.adroll.com *.quantserve.com www.googletagmanager.com fonts.gstatic.com fonts.googleapis.com js.stripe.com *.google.com *.pendo.io *.zuora.com *.titanfile.com *.titanfile.qa data: 'unsafe-inline' https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; script-src 'self' js.stripe.com *.google.com *.gstatic.com appsforoffice.microsoft.com ajax.aspnetcdn.com *.pendo.io *.zuora.com 'unsafe-inline' 'unsafe-eval' ; connect-src 'self' wss: *.hitachi-solutions.com *.pendo.io *.zuora.com https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; img-src * 'self' blob: data: 'unsafe-inline' ; style-src 'self' use.fontawesome.com fonts.googleapis.com *.pendo.io 'unsafe-inline' *.just-checking.com ; base-uri 'self' ; form-action 'self' * ; frame-ancestors 'self' outlook.office.com mail.yukonombudsman.ca *.pendo.io https://sandbox.ca *.saskmutual.com *.insuranceconnect.io
+x-frame-options: DENY
+vary: Accept-Language, Cookie
+content-language: en-us
+set-cookie: sessionid=b881d83gg1xucm20tenui1cvenssxj5n; expires=Thu, 25 Jun 2026 10:07:51 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=31536000; includeSubdomains;
+referrer-policy: strict-origin-when-cross-origin
+cross-origin-opener-policy: same-origin
+

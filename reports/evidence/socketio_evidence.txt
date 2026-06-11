@@ -1,0 +1,6 @@
+=== EVIDENCE: Unauthenticated Socket.IO Handshake ===
+0{"sid":"vZxnDaO4Sa-CAxkSAAeQ","upgrades":["websocket"],"pingTimeout":60000,"pingInterval":10000,"maxPayload":1000000}
+
+=== EVIDENCE: POST event accepted ===
+Obtained SID: wdCT0qoZkwUdfxRoAAeR
+OK

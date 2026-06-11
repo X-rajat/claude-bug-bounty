@@ -1,0 +1,45 @@
+=== EVIDENCE: CSP on Authenticated Pages (unsafe-inline + unsafe-eval) ===
+HTTP/2 302 
+date: Thu, 11 Jun 2026 10:07:53 GMT
+content-type: text/html; charset=utf-8
+content-length: 0
+set-cookie: AWSALBTG=RZ3Cvrk/85tyOGaFmQvkSpiCgqZ4KJlP7RNJuAflLTdN67WwNhD0kcqL4aMTLoZfTRQMiMK6G3vu+T//VpUU2JJIt5LsUh3gctaFMDP4Dt94Rgw41OHslB266qSlZ8Pf6y8AezH7Emb6D+u7si45yedeU4kBwplOd+46msR59VEnPIbEOCI=; Expires=Thu, 18 Jun 2026 10:07:53 GMT; Path=/
+set-cookie: AWSALBTGCORS=RZ3Cvrk/85tyOGaFmQvkSpiCgqZ4KJlP7RNJuAflLTdN67WwNhD0kcqL4aMTLoZfTRQMiMK6G3vu+T//VpUU2JJIt5LsUh3gctaFMDP4Dt94Rgw41OHslB266qSlZ8Pf6y8AezH7Emb6D+u7si45yedeU4kBwplOd+46msR59VEnPIbEOCI=; Expires=Thu, 18 Jun 2026 10:07:53 GMT; Path=/; SameSite=None; Secure
+location: /login/?next=/
+content-security-policy: default-src 'self' *.live.com *.1drv.com *.microsoft.com *.ms *.office.net *.sharepoint.com *.officeapps.live.com s.adroll.com *.quantserve.com www.googletagmanager.com fonts.gstatic.com fonts.googleapis.com js.stripe.com *.google.com *.pendo.io *.zuora.com *.titanfile.com *.titanfile.qa data: 'unsafe-inline' https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; script-src 'self' js.stripe.com *.google.com *.gstatic.com appsforoffice.microsoft.com ajax.aspnetcdn.com *.pendo.io *.zuora.com 'unsafe-inline' 'unsafe-eval' ; connect-src 'self' wss: *.hitachi-solutions.com *.pendo.io *.zuora.com https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; img-src * 'self' blob: data: 'unsafe-inline' ; style-src 'self' use.fontawesome.com fonts.googleapis.com *.pendo.io 'unsafe-inline' *.just-checking.com ; base-uri 'self' ; form-action 'self' * ; frame-ancestors 'self' outlook.office.com mail.yukonombudsman.ca *.pendo.io https://sandbox.ca *.saskmutual.com *.insuranceconnect.io
+x-frame-options: DENY
+vary: Accept-Language, Cookie
+content-language: en-us
+set-cookie: sessionid=nz48mkclll150gv56h7f1rn4964ajtby; expires=Thu, 25 Jun 2026 10:07:53 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=31536000; includeSubdomains;
+referrer-policy: strict-origin-when-cross-origin
+cross-origin-opener-policy: same-origin
+
+
+
+=== EVIDENCE: CSP on Login Page (nonce-based) ===
+HTTP/2 200 
+date: Thu, 11 Jun 2026 10:07:53 GMT
+content-type: text/html; charset=utf-8
+content-length: 7870
+set-cookie: AWSALBTG=lipWMekoJovUTa2Ll5ROHFwPkQjWSmQEw5NGgjAcW+OD3KkA9Pln00VIN4Ybkj+0o0Ja3gUvGbXJxnWIcNa+Q/6J0SUJ9kclJrjOAaBe0XInNSoLx51mW3d8JIfFiifUBA0HOi7RNUbJ2/LwcxjtCeT74SvMuMfImvQnbhrGwfuE1ej1S4o=; Expires=Thu, 18 Jun 2026 10:07:53 GMT; Path=/
+set-cookie: AWSALBTGCORS=lipWMekoJovUTa2Ll5ROHFwPkQjWSmQEw5NGgjAcW+OD3KkA9Pln00VIN4Ybkj+0o0Ja3gUvGbXJxnWIcNa+Q/6J0SUJ9kclJrjOAaBe0XInNSoLx51mW3d8JIfFiifUBA0HOi7RNUbJ2/LwcxjtCeT74SvMuMfImvQnbhrGwfuE1ej1S4o=; Expires=Thu, 18 Jun 2026 10:07:53 GMT; Path=/; SameSite=None; Secure
+cache-control: no-transform, max-age=0, no-cache, no-store, must-revalidate, private
+expires: Thu, 11 Jun 2026 10:07:53 GMT
+vary: Cookie, Accept-Language
+content-security-policy: default-src 'self' *.live.com *.1drv.com *.microsoft.com *.ms *.office.net *.sharepoint.com *.officeapps.live.com s.adroll.com *.quantserve.com www.googletagmanager.com fonts.gstatic.com fonts.googleapis.com js.stripe.com *.google.com *.pendo.io data:  https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com ; script-src 'self' js.stripe.com *.google.com *.gstatic.com appsforoffice.microsoft.com ajax.aspnetcdn.com *.pendo.io 'nonce-3PT2EyIn37ddEXA8CgTUmQ==' ; connect-src 'self' wss: *.hitachi-solutions.com *.pendo.io *.zuora.com https://app-common-uploads.s3.amazonaws.com https://app-common-uploads.s3-fips.ca-central-1.amazonaws.com https://us-common-uploads.s3.amazonaws.com https://*.blob.core.windows.net https://us-common-uploads.s3-accelerate.amazonaws.com https://eu-common-uploads.s3.amazonaws.com https://foley-common-upload.s3.amazonaws.com https://gowlingwlg-uploads.s3.amazonaws.com https://nsuarb-uploads.s3.amazonaws.com https://rbcbank-uploads.s3.amazonaws.com ; img-src * 'self' blob: data: 'unsafe-inline' ; style-src 'self' use.fontawesome.com fonts.googleapis.com *.pendo.io 'unsafe-inline' *.just-checking.com ; base-uri 'self' ; form-action 'self' * ; frame-ancestors 'self' outlook.office.com mail.yukonombudsman.ca *.pendo.io https://sandbox.ca *.saskmutual.com *.insuranceconnect.io
+x-frame-options: DENY
+content-language: en-us
+set-cookie: csrftoken=G7kaQBL8t9Jjitgx2eDfZjrPQvsQMLKx; expires=Thu, 10 Jun 2027 10:07:53 GMT; HttpOnly; Max-Age=31449600; Path=/; SameSite=Lax; Secure
+set-cookie: sessionid=ca694nkjcirs60ik9x2mubsj36nuvdf2; expires=Thu, 25 Jun 2026 10:07:53 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+strict-transport-security: max-age=31536000; includeSubdomains;
+referrer-policy: strict-origin-when-cross-origin
+access-control-allow-credentials: true
+access-control-allow-headers: authorization, Content-Type, X-Content-Range, X-Session-Id, X-Source, Content-Disposition
+access-control-allow-methods: POST, GET, OPTIONS, DELETE
+cross-origin-opener-policy: unsafe-none
+

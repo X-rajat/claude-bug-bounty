@@ -1,0 +1,173 @@
+=== EVIDENCE: previewer.js (DOM XSS sink) ===
+import Backbone from 'bbloader';
+import previewerTemplate from '../templates/previewer.html?raw';
+
+const PreviewView = Backbone.Marionette.Layout.extend({
+  template: previewerTemplate,
+
+  events: {
+    'click #close-previewer': 'closePreviewer',
+  },
+
+  initialize: function () {
+    _.bindAll(this, 'keyup', 'closePreviewer');
+  },
+
+  templateHelpers: function () {
+    return { title: this.options.title };
+  },
+
+  onRender: function () {
+    $('#wrapper').css('display', 'none');
+    this.$('#previewer').html(this.options.html);
+    $(document).on('keyup', this.keyup);
+  },
+
+  keyup: function (e) {
+    e.preventDefault();
+    if (e.key == "Escape") {
+      this.closePreviewer();
+    }
+  },
+
+  closePreviewer: function () {
+    $('#wrapper').css('display', 'block');
+    this.close();
+  },
+});
+
+export default PreviewView;
+
+=== EVIDENCE: admin/commands.js (permission overwrite) ===
+
+import Socket from '../socket.js';
+import utils from '../utils.ts';
+
+export default {
+  listen: function () {
+    socket.on('admin:suggestrefresh', this.suggestRefresh);
+    socket.on('admin:dropsocket', this.disconnect);
+    socket.on('admin:logevent', this.logevent);
+    socket.on('admin:enabledebug', this.enableDebug);
+    socket.on('admin:softlockout', this.softLockout);
+    socket.on('admin:hardlockout', this.hardLockout);
+    socket.on('admin:ackemit', this.ackEmit);
+    socket.on('admin:reconnectifxhr', this.reconnectIfXhr);
+    socket.on('admin:subscriptioncancelled', this.subscriptionCancelled);
+    socket.on('admin:alertchanneldeleted', this.alertChannelDeleted);
+    socket.on('admin:adminnotice', this.serverAdminNotice);
+    socket.on('admin:adminmodifynotice', this.serverAdminModifyNotice);
+    socket.on('user:updatedefaults', this.updateUserDefaults);
+    socket.on('permissions:update_perm_cache', this.permissionsChanged);
+  },
+
+  reconnectIfXhr: function () {
+    if (!djangoVars.force_xhr_polling && socket.socket && socket.socket.transport && socket.socket.transport.xhr) {
+      const existingEvents = socket.$events;
+      socket.disconnect();
+      delete window.socket;
+
+      new Socket().start()
+      socket.$events = existingEvents;
+      socket.emit('user:checkbuildandauth', {});
+    }
+  },
+
+  suggestRefresh: function () {
+    var conf = TitanFile.confirm({ text: _t('A new version of TitanFile is available. Press Yes to refresh, or No to postpone. You can postpone if you have any unsent messages or unfinished uploads.') });
+
+    $.when(conf).done(function () {
+      window.location.reload();
+    }).fail(function () {
+      window.setInterval(function () {
+        TitanFile.alert('warning', _t('Please remember to refresh your browser to get the latest version') + '.');
+      }, 300000);
+    });
+  },
+
+  disconnect: function () {
+    socket.disconnect();
+    TitanFile.alert('error', _t('Your session has been disconnected by the server. Please refresh to continue using TitanFile') + '.');
+
+    setTimeout(function () {
+      location.reload();
+    }, 5000);
+  },
+
+  logevent: function () {
+    utils.serverLog('client_error');
+  },
+
+  enableDebug: function () {
+    djangoVars.console_debug = true;
+    console.log('Console logging enabled');
+  },
+
+  softLockout: function () {
+    socket.disconnect();
+
+    TitanFile.alert('error', _t('Due to an unusual number of failed verification attempts, this account has been locked with a timer to protect your privacy. Returning to the login page in 10 seconds.'));
+
+    setTimeout(function () {
+      location.reload();
+    }, 10000);
+  },
+
+  hardLockout: function () {
+    socket.disconnect();
+
+    TitanFile.alert('error', _t('Due to an unusual number of failed verification attempts, this account has been locked and requires a password reset. Instructions for resetting your password will be sent to your email now.'));
+
+    setTimeout(function () {
+      location.reload();
+    }, 10000);
+  },
+
+  ackEmit: function (data) {
+    TitanFile.vent.trigger(data['name']);
+  },
+
+  subscriptionCancelled: function () {
+    socket.disconnect();
+    TitanFile.alert('error', _t('Your subscription has been cancelled. Please contact support@titanfile.com if you wish to re-open your account.'));
+
+    setTimeout(function () {
+      location.reload();
+    }, 10000);
+  },
+
+  alertChannelDeleted: function () {
+    TitanFile.alert('error', _t('This channel has been deleted so your request can no longer be processed. Please contact support@titanfile.com if you wish to restore this channel.'));
+  },
+
+  permissionsChanged: function (data) {
+    /**
+     * Updates the user's permissions based on the provided data.
+     *
+     * @param {Object} data - The data containing the new permissions.
+     * @param {Array|string[]} data.permissions - The updated list of permissions.
+     */
+    const perms = new Set(data.permissions)
+    TitanFile.user.set('permissions', perms);
+  },
+
+  /**
+   * Event listener connecting to apps/channels/events.py used to listen for the delete event and
+   * notify admin users to automatically update channel status on admin page.
+   */
+  serverAdminNotice: function (data) {
+    const bc = new BroadcastChannel('adminNotice');
+    bc.postMessage(data);
+  },
+
+  serverAdminModifyNotice: function (data) {
+    const bc = new BroadcastChannel('adminModifyNotice');
+    bc.postMessage(data);
+  },
+  // update the user defaults from their profiles page (cc me, show images, warning dialog on file move)
+  updateUserDefaults: function (data) {
+    for (const key in data) {
+      TitanFile.user.set(key, data[key]);
+    }
+  },
+};

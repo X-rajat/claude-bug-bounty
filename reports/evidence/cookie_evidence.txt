@@ -1,0 +1,4 @@
+=== EVIDENCE: Cookie Analysis ===
+set-cookie: AWSALBTG=Y2zK3xcLFemVEqVKbh3SdLUVDgPaEKKlIQwbbBqWfqYTcBqD5EIs6OzGAXVqFpzVdx4EbkRwMyqJBtP/L4fYtcj4+9xNp7BScXHQKGvQKUezM7ZdEsjhIw7a6dcbT6Biz3DAdHJdOdm+7CQ+ofwWkEE3mQA5rU+T6KKS6Jx0A3SkDQ2t9/M=; Expires=Thu, 18 Jun 2026 10:08:02 GMT; Path=/
+set-cookie: AWSALBTGCORS=Y2zK3xcLFemVEqVKbh3SdLUVDgPaEKKlIQwbbBqWfqYTcBqD5EIs6OzGAXVqFpzVdx4EbkRwMyqJBtP/L4fYtcj4+9xNp7BScXHQKGvQKUezM7ZdEsjhIw7a6dcbT6Biz3DAdHJdOdm+7CQ+ofwWkEE3mQA5rU+T6KKS6Jx0A3SkDQ2t9/M=; Expires=Thu, 18 Jun 2026 10:08:02 GMT; Path=/; SameSite=None; Secure
+set-cookie: sessionid=on6vqwqvgl6xka4iuidoc68n2shyolta; expires=Thu, 25 Jun 2026 10:08:02 GMT; HttpOnly; Max-Age=1209600; Path=/; SameSite=Lax; Secure
