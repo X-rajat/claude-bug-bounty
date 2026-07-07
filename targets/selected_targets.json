@@ -1,0 +1,28 @@
+{
+  "generated": "2026-07-07",
+  "source": "manual — Vultr bug bounty program policy",
+  "count": 1,
+  "targets": [
+    {
+      "name": "Vultr",
+      "handle": "vultr",
+      "url": "https://www.vultr.com/",
+      "managed": false,
+      "has_wildcard": false,
+      "bounty_min": 50,
+      "bounty_max": 10000,
+      "scope_domains": [
+        "www.vultr.com",
+        "console.vultr.com",
+        "api.vultr.com",
+        "docs.vultr.com",
+        "blogs.vultr.com",
+        "community.vultr.com",
+        "discover.vultr.com",
+        "agent.vultr.com",
+        "creators.vultrdevrel.com"
+      ],
+      "source": "program_policy"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "Vultr",
+  "handle": "vultr",
+  "url": "https://www.vultr.com/",
+  "platform": "self-hosted / VRT (Bugcrowd Vulnerability Rating Taxonomy)",
+  "managed": false,
+  "has_wildcard": false,
+  "source": "program_policy",
+  "note": "Scope transcribed from the public Vultr bug bounty policy. Only the exact hosts listed are in scope — no wildcards. Verify against the live policy page before testing; program terms change.",
+  "assets": [
+    { "asset_identifier": "www.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "console.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "api.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "docs.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "blogs.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "community.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "discover.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "agent.vultr.com", "asset_type": "URL", "eligible_for_bounty": true },
+    { "asset_identifier": "creators.vultrdevrel.com", "asset_type": "URL", "eligible_for_bounty": true }
+  ],
+  "scope_domains": [
+    "www.vultr.com",
+    "console.vultr.com",
+    "api.vultr.com",
+    "docs.vultr.com",
+    "blogs.vultr.com",
+    "community.vultr.com",
+    "discover.vultr.com",
+    "agent.vultr.com",
+    "creators.vultrdevrel.com"
+  ],
+  "accepted_categories": [
+    "Injection Attacks",
+    "Authentication or Authorization Flaws",
+    "Cross-Site Scripting (XSS)",
+    "Sensitive Data Exposure",
+    "Privilege Escalation"
+  ],
+  "accepted_categories_note": "List is explicitly non-exhaustive ('include, but are not limited to').",
+  "rating_system": {
+    "taxonomy": "Bugcrowd VRT",
+    "eligible_for_payout": "P1-P4",
+    "reportable_no_payout": "P5"
+  },
+  "payout_tiers_usd": {
+    "P4": { "min": 50, "max": 300 },
+    "P3": { "min": 300, "max": 500 },
+    "P2": { "min": 500, "max": 1000 },
+    "P1": { "min": 1000, "max": 10000 }
+  },
+  "bounty_min": 50,
+  "bounty_max": 10000
+}
